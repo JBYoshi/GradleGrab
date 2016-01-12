@@ -1,0 +1,20 @@
+# Gradle
+build/
+.gradle/
+
+# Eclipse
+.project
+.classpath
+.settings/
+bin/
+
+# NetBeans
+nbproject/
+
+# IntelliJ
+.idea/
+*.iml
+
+# System
+.DS_Store
+Thumbs.db

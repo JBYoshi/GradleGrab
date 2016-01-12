@@ -1,0 +1,27 @@
+plugins {
+	id 'java'
+	id 'application'
+	id 'edu.sc.seis.launch4j' version '1.6.1'
+}
+
+repositories {
+	mavenCentral()
+}
+
+defaultTasks 'build'
+
+build.dependsOn 'launch4j'
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+// Executable information
+mainClassName = 'jbyoshi.gradlegrab.GradleGrab'
+
+// Launch4J code
+launch4j {
+	mainClassName = project.mainClassName
+	jdkPreference = 'preferJdk'
+	outfile = 'gradle.exe'
+	headerType = 'console'
+}
