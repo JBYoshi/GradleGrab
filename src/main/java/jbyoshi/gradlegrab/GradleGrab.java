@@ -29,7 +29,7 @@ public final class GradleGrab {
 			System.err.println("Invalid Gradle home specified.");
 			System.exit(1);
 		}
-		Path grabDir = Paths.get(gradleHome, "grab");
+		Path grabDir = gradleHome.resolve("grab");
 		Path versionFile = grabDir.resolve(VERSION_FILE);
 		String version;
 		Path gradleDir;
