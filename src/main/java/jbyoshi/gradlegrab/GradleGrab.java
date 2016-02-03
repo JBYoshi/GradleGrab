@@ -9,19 +9,28 @@ import java.util.*;
 import java.util.stream.*;
 
 public final class GradleGrab {
-	private static final Path GRAB_DIR = Paths.get(System.getProperty("user.home"), ".gradle", "grab");
 	private static final String VERSION_FILE = "version";
 	private static final String INSTALL_IN_PROGRESS_FILE = "installInProgress";
 
 	public static void main(String[] args) {
 		boolean offline = false;
+		Path gradleHome = Paths.get(System.getProperty("user.home"), ".gradle");
 		for (String arg : args) {
-			// --offline is built in to Gradle.
-			if (arg.equalsIgnoreCase("--offline")) {
+			// All arguments should be built in to Gradle.
+			if (gradleHome == null) {
+				gradleHome = Paths.get(arg);
+			} else if (arg.equalsIgnoreCase("--offline")) {
 				offline = true;
+			} else if (arg.equalsIgnoreCase("-g") || arg.equalsIgnoreCase("--gradle-user-home")) {
+				gradleHome = null;
 			}
 		}
-		Path versionFile = GRAB_DIR.resolve(VERSION_FILE);
+		if (gradleHome == null) {
+			System.err.println("Invalid Gradle home specified.");
+			System.exit(1);
+		}
+		Path grabDir = Paths.get(gradleHome, "grab");
+		Path versionFile = grabDir.resolve(VERSION_FILE);
 		String version;
 		Path gradleDir;
 		if (!offline) {
@@ -41,14 +50,14 @@ public final class GradleGrab {
 				}
 
 				version = getJsonValue(json, "version");
-				gradleDir = GRAB_DIR.resolve("gradle-" + version);
+				gradleDir = grabDir.resolve("gradle-" + version);
 				if (!Files.isRegularFile(versionFile)) {
 					Files.createFile(versionFile);
 				}
 				try (FileChannel channel = FileChannel.open(versionFile, StandardOpenOption.WRITE);
 						Writer out = new OutputStreamWriter(Channels.newOutputStream(channel));
 						FileLock lock = channel.lock()) {
-					Path installInProgress = GRAB_DIR.resolve(INSTALL_IN_PROGRESS_FILE);
+					Path installInProgress = grabDir.resolve(INSTALL_IN_PROGRESS_FILE);
 					if (!Files.isDirectory(gradleDir) || Files.exists(installInProgress)) {
 						System.out.println("Updating to Gradle " + version);
 						Path download = java.io.File.createTempFile("gradle-" + version + "-download", ".zip").toPath();
@@ -56,7 +65,7 @@ public final class GradleGrab {
 						if (!Files.exists(installInProgress)) {
 							Files.createFile(installInProgress);
 						}
-						extract(download, GRAB_DIR);
+						extract(download, grabDir);
 						Files.deleteIfExists(installInProgress);
 						System.out.println("Update completed.");
 					}
@@ -77,7 +86,7 @@ public final class GradleGrab {
 		} else {
 			try {
 				version = String.join(" ", Files.readAllLines(versionFile));
-				gradleDir = GRAB_DIR.resolve("gradle-" + version);
+				gradleDir = grabDir.resolve("gradle-" + version);
 				if (!Files.isDirectory(gradleDir)) {
 					System.err.println("You must run Gradle once in online mode to download the files.");
 					System.err.println("Please remove --offline from your script arguments.");
