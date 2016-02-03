@@ -24,4 +24,5 @@ launch4j {
 	jdkPreference = 'preferJdk'
 	outfile = 'gradle.exe'
 	headerType = 'console'
+	chdir = ''
 }
