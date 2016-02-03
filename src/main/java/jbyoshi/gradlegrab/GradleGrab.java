@@ -19,9 +19,9 @@ public final class GradleGrab {
 			// All arguments should be built in to Gradle.
 			if (gradleHome == null) {
 				gradleHome = Paths.get(arg);
-			} else if (arg.equalsIgnoreCase("--offline")) {
+			} else if (arg.equals("--offline")) {
 				offline = true;
-			} else if (arg.equalsIgnoreCase("-g") || arg.equalsIgnoreCase("--gradle-user-home")) {
+			} else if (arg.equals("-g") || arg.equals("--gradle-user-home")) {
 				gradleHome = null;
 			}
 		}
