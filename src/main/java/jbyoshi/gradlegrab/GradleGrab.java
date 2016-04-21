@@ -37,7 +37,7 @@ public final class GradleGrab {
 			try {
 				String json;
 				try (BufferedReader in = new BufferedReader(
-						new InputStreamReader(new URL("http://services.gradle.org/versions/current").openStream()));
+						new InputStreamReader(new URL("https://services.gradle.org/versions/current").openStream()));
 						StringWriter out = new StringWriter()) {
 					// At the time of writing, this is more than enough (the
 					// JSON is 244 characters long).
