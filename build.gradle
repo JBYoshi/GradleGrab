@@ -8,7 +8,7 @@ repositories {
 	mavenCentral()
 }
 
-version = '1.0.2'
+version = '1.0.3-SNAPSHOT'
 
 defaultTasks 'build'
 
@@ -23,7 +23,6 @@ mainClassName = 'jbyoshi.gradlegrab.GradleGrab'
 // Launch4J code
 launch4j {
 	mainClassName = project.mainClassName
-	jdkPreference = 'preferJdk'
 	outfile = 'gradle.exe'
 	headerType = 'console'
 	chdir = ''

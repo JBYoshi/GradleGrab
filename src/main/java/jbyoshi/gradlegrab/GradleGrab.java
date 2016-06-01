@@ -5,6 +5,7 @@ import java.net.*;
 import java.nio.channels.*;
 import java.nio.file.*;
 import java.nio.file.FileSystem;
+import java.nio.file.attribute.*;
 import java.util.*;
 import java.util.stream.*;
 
@@ -28,6 +29,7 @@ public final class GradleGrab {
 		if (gradleHome == null) {
 			System.err.println("Invalid Gradle home specified.");
 			System.exit(1);
+			return; // Shuts up Eclipse's "gradleHome may be null"
 		}
 		Path grabDir = gradleHome.resolve("grab");
 		Path versionFile = grabDir.resolve(VERSION_FILE);
@@ -66,6 +68,16 @@ public final class GradleGrab {
 							Files.createFile(installInProgress);
 						}
 						extract(download, grabDir);
+						Path gradleScript = gradleDir.resolve("bin/gradle");
+						try {
+							Set<PosixFilePermission> perms = Files.getPosixFilePermissions(gradleScript);
+							if (perms.contains(PosixFilePermission.OWNER_READ)) {
+								perms.add(PosixFilePermission.OWNER_EXECUTE);
+							}
+							Files.setPosixFilePermissions(gradleScript, perms);
+						} catch (UnsupportedOperationException e) {
+							// Not on Unix.
+						}
 						Files.deleteIfExists(installInProgress);
 						System.out.println("Update completed.");
 					}
@@ -100,24 +112,36 @@ public final class GradleGrab {
 			}
 		}
 
+		List<String> gradleCmd = new ArrayList<>(args.length + 3);
+		if (System.getProperty("os.name").toLowerCase().contains("win")) {
+			gradleCmd.add("cmd");
+			gradleCmd.add("/c");
+			gradleCmd.add(gradleDir.resolve("bin/gradle.bat").toAbsolutePath().toString());
+		} else {
+			gradleCmd.add(gradleDir.resolve("bin/gradle").toAbsolutePath().toString());
+		}
+		gradleCmd.addAll(Arrays.asList(args));
+		ProcessBuilder builder = new ProcessBuilder(gradleCmd);
+		builder.directory(Paths.get("").toFile());
+		builder.inheritIO();
+
+		Process process;
 		try {
-			@SuppressWarnings("resource")
-			URLClassLoader classLoader = new URLClassLoader(
-					Files.list(gradleDir.resolve("lib")).map(GradleGrab::pathToURL).toArray(URL[]::new));
-			Class<?> mainClass = Class.forName("org.gradle.launcher.Main", true, classLoader);
-			Object entryPoint = mainClass.getConstructor().newInstance();
-			mainClass.getDeclaredMethod("main", String[].class).invoke(entryPoint, (Object) args);
-		} catch (Exception e) {
+			process = builder.start();
+		} catch (IOException e) {
 			throw new AssertionError("Unable to launch Gradle", e);
 		}
-
-	}
-
-	private static URL pathToURL(Path path) {
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			if (process.isAlive()) {
+				process.destroy();
+			}
+		}, "Gradle Shutdown"));
 		try {
-			return path.toUri().toURL();
-		} catch (MalformedURLException e) {
-			throw new IllegalArgumentException(e);
+			System.exit(process.waitFor());
+		} catch (InterruptedException e) {
+			// This is **NOT** a SIGINT or SIGTERM. This is a
+			// Thread.interrupt().
+			System.err.println(GradleGrab.class.getSimpleName() + " got InterruptedException");
 		}
 	}
 
