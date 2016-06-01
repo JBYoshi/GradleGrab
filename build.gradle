@@ -27,3 +27,14 @@ launch4j {
 	headerType = 'console'
 	chdir = ''
 }
+
+task testRun(type: JavaExec) {
+	dependsOn jar
+	classpath = sourceSets.main.runtimeClasspath
+	main = project.mainClassName
+	args 'dummyTaskForTest'
+	workingDir project.projectDir
+	standardOutput = new ByteArrayOutputStream()
+}
+check.dependsOn testRun
+task dummyTaskForTest {}
