@@ -4,29 +4,19 @@ plugins {
 	id 'edu.sc.seis.launch4j' version '1.6.1'
 }
 
-repositories {
-	mavenCentral()
-}
-
-version = '1.0.3'
-
 defaultTasks 'build'
-
-build.dependsOn 'launch4j'
-
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
-// Executable information
 mainClassName = 'jbyoshi.gradlegrab.GradleGrab'
 
-// Launch4J code
 launch4j {
 	mainClassName = project.mainClassName
 	outfile = 'gradle.exe'
 	headerType = 'console'
 	chdir = ''
 }
+assemble.dependsOn 'launch4j'
 
 task testRun(type: JavaExec) {
 	dependsOn jar
