@@ -112,17 +112,15 @@ public final class GradleGrab {
 			}
 		}
 
-		List<String> gradleCmd = new ArrayList<>(args.length + 3);
+		String gradleScript = gradleDir.resolve("bin/gradle.bat").toAbsolutePath().toString();
 		if (System.getProperty("os.name").toLowerCase().contains("win")) {
-			gradleCmd.add("cmd");
-			gradleCmd.add("/c");
-			gradleCmd.add(gradleDir.resolve("bin/gradle.bat").toAbsolutePath().toString());
-		} else {
-			gradleCmd.add(gradleDir.resolve("bin/gradle").toAbsolutePath().toString());
+			gradleScript += ".bat";
 		}
+		List<String> gradleCmd = new ArrayList<>(args.length + 1);
+		gradleCmd.add(gradleScript);
 		gradleCmd.addAll(Arrays.asList(args));
 		ProcessBuilder builder = new ProcessBuilder(gradleCmd);
-		builder.directory(Paths.get("").toFile());
+		builder.directory(Paths.get("").toFile().getAbsoluteFile());
 		builder.inheritIO();
 
 		Process process;
