@@ -112,7 +112,7 @@ public final class GradleGrab {
 			}
 		}
 
-		String gradleScript = gradleDir.resolve("bin/gradle.bat").toAbsolutePath().toString();
+		String gradleScript = gradleDir.resolve("bin/gradle").toAbsolutePath().toString();
 		if (System.getProperty("os.name").toLowerCase().contains("win")) {
 			gradleScript += ".bat";
 		}
