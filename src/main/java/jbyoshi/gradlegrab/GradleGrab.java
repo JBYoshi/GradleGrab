@@ -43,7 +43,7 @@ public final class GradleGrab {
 						StringWriter out = new StringWriter()) {
 					// At the time of writing, this is more than enough (the
 					// JSON is 244 characters long).
-					char[] cbuf = new char[300];
+					char[] cbuf = new char[256];
 					int len;
 					while ((len = in.read(cbuf)) > 0) {
 						out.write(cbuf, 0, len);
